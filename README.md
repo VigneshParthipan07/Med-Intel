@@ -72,11 +72,6 @@ For Tamil, Hindi, and Telugu voice support:
 
 This project is licensed under the MIT License.
 
-## 👨‍💻 Developer
-
-**Tharanidharane**
-- GitHub: [@tharanidharane](https://github.com/tharanidharane)
-
 ---
 
 ⚠️ **Medical Disclaimer**: This tool provides general information only and should not replace professional medical advice. Always consult healthcare professionals for medical decisions.
