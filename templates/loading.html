@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loading - MedIntel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .loading-container {
+            text-align: center;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        .logo-container {
+            position: relative;
+            margin-bottom: 2rem;
+            animation: logoFloat 3s ease-in-out infinite;
+        }
+
+        .brain-logo {
+            width: 120px;
+            height: 120px;
+            background: #fbbf24;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            box-shadow: 0 10px 30px rgba(251, 191, 36, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .brain-logo::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                transparent,
+                rgba(255, 255, 255, 0.3),
+                transparent
+            );
+            transform: rotate(45deg);
+            animation: shimmer 2s infinite;
+        }
+
+        .brain-icon {
+            font-size: 3.5rem;
+            color: #1e40af;
+            z-index: 2;
+            position: relative;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .app-title {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(45deg, #ffffff, #fbbf24);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: titleGlow 2s ease-in-out infinite alternate;
+        }
+
+        .app-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 3rem;
+            animation: slideUp 1s ease-out 0.5s both;
+        }
+
+        .motto {
+            font-size: 1.5rem;
+            font-style: italic;
+            margin-bottom: 3rem;
+            opacity: 0.95;
+            font-weight: 300;
+            animation: slideUp 1s ease-out 1s both;
+            position: relative;
+        }
+
+        .motto::before,
+        .motto::after {
+            content: '"';
+            color: #fbbf24;
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .loading-progress {
+            margin-bottom: 2rem;
+            animation: slideUp 1s ease-out 1.5s both;
+        }
+
+        .progress-bar-container {
+            width: 300px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            margin: 0 auto 1rem;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #fbbf24, #ffffff, #fbbf24);
+            background-size: 200% 100%;
+            border-radius: 10px;
+            animation: progressAnimation 3s ease-in-out infinite;
+            width: 0%;
+        }
+
+        .loading-text {
+            font-size: 1.1rem;
+            opacity: 0.8;
+        }
+
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(251, 191, 36, 0.6);
+            border-radius: 50%;
+            animation: particleFloat 6s infinite linear;
+        }
+
+        .medical-icons {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .medical-icon {
+            position: absolute;
+            color: rgba(255, 255, 255, 0.1);
+            font-size: 1.5rem;
+            animation: medicalIconFloat 8s infinite linear;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes logoFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes titleGlow {
+            0% { text-shadow: 0 0 20px rgba(251, 191, 36, 0.5); }
+            100% { text-shadow: 0 0 30px rgba(251, 191, 36, 0.8), 0 0 40px rgba(255, 255, 255, 0.3); }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes progressAnimation {
+            0% { width: 0%; background-position: 0% 50%; }
+            50% { width: 70%; background-position: 100% 50%; }
+            100% { width: 100%; background-position: 200% 50%; }
+        }
+
+        @keyframes particleFloat {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        @keyframes medicalIconFloat {
+            0% {
+                transform: translateY(100vh) translateX(0px) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) translateX(50px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            .app-title {
+                font-size: 2.5rem;
+            }
+            
+            .motto {
+                font-size: 1.3rem;
+                padding: 0 1rem;
+            }
+            
+            .progress-bar-container {
+                width: 250px;
+            }
+            
+            .brain-logo {
+                width: 100px;
+                height: 100px;
+            }
+            
+            .brain-icon {
+                font-size: 3rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .app-title {
+                font-size: 2rem;
+            }
+            
+            .motto {
+                font-size: 1.1rem;
+            }
+            
+            .progress-bar-container {
+                width: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background Particles -->
+    <div class="particles" id="particles"></div>
+    
+    <!-- Floating Medical Icons -->
+    <div class="medical-icons" id="medicalIcons"></div>
+
+    <!-- Main Loading Container -->
+    <div class="loading-container">
+        <!-- Logo Section -->
+        <div class="logo-container">
+            <div class="brain-logo">
+                <i class="fas fa-brain brain-icon"></i>
+            </div>
+            <h1 class="app-title">Med<span style="color: #fbbf24;">In</span>tel</h1>
+            <p class="app-subtitle">AI-Powered Medical Analysis</p>
+        </div>
+
+        <!-- Motto -->
+        <div class="motto">
+            Beyond the symptoms, lies the solution.
+        </div>
+
+        <!-- Loading Progress -->
+        <div class="loading-progress">
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <div class="loading-text" id="loadingText">Initializing AI systems...</div>
+        </div>
+    </div>
+
+    <script>
+        // Create floating particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 20;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 3 + 4) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // Create floating medical icons
+        function createMedicalIcons() {
+            const iconsContainer = document.getElementById('medicalIcons');
+            const icons = ['fa-stethoscope', 'fa-heartbeat', 'fa-pills', 'fa-microscope', 'fa-dna', 'fa-syringe', 'fa-thermometer', 'fa-user-md'];
+            
+            setInterval(() => {
+                if (iconsContainer.children.length < 8) {
+                    const icon = document.createElement('i');
+                    icon.className = `fas ${icons[Math.floor(Math.random() * icons.length)]} medical-icon`;
+                    icon.style.left = Math.random() * 100 + '%';
+                    icon.style.animationDuration = (Math.random() * 4 + 6) + 's';
+                    iconsContainer.appendChild(icon);
+
+                    // Remove icon after animation
+                    setTimeout(() => {
+                        if (icon.parentNode) {
+                            icon.parentNode.removeChild(icon);
+                        }
+                    }, 10000);
+                }
+            }, 1500);
+        }
+
+        // Simulate loading progress
+        function simulateLoading() {
+            const progressBar = document.getElementById('progressBar');
+            const loadingText = document.getElementById('loadingText');
+            const loadingSteps = [
+                { text: 'Initializing AI systems...', progress: 20 },
+                { text: 'Loading medical databases...', progress: 40 },
+                { text: 'Preparing analysis tools...', progress: 60 },
+                { text: 'Configuring security protocols...', progress: 80 },
+                { text: 'Almost ready...', progress: 95 },
+                { text: 'Welcome to MedIntel!', progress: 100 }
+            ];
+
+            let currentStep = 0;
+            const stepInterval = setInterval(() => {
+                if (currentStep < loadingSteps.length) {
+                    const step = loadingSteps[currentStep];
+                    loadingText.textContent = step.text;
+                    progressBar.style.width = step.progress + '%';
+                    currentStep++;
+                } else {
+                    clearInterval(stepInterval);
+                    // Redirect to dashboard after loading completes
+                    setTimeout(() => {
+                        window.location.href = '/dashboard';
+                    }, 1000);
+                }
+            }, 800);
+        }
+
+        // Initialize everything when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+            createMedicalIcons();
+            simulateLoading();
+        });
+
+        // Prevent page reload/back during loading
+        history.pushState(null, null, location.href);
+        window.onpopstate = function () {
+            history.go(1);
+        };
+    </script>
+</body>
+</html>

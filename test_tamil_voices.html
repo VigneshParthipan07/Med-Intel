@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tamil Voice Test - MedIntel</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .voice-item { padding: 10px; margin: 5px 0; border: 1px solid #ddd; border-radius: 5px; }
+        .tamil-voice { background-color: #e8f5e8; }
+        .english-voice { background-color: #f0f8ff; }
+        .hindi-voice { background-color: #fff5ee; }
+        .telugu-voice { background-color: #f5f0ff; }
+        button { margin: 5px; padding: 8px 16px; cursor: pointer; }
+        .status { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; }
+        .warning { background-color: #fff3cd; color: #856404; }
+        .error { background-color: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎤 Tamil Voice Test - MedIntel</h1>
+        <p>This page helps you test if Tamil (and other Indian language) voices are properly installed on your system.</p>
+        
+        <div id="status" class="status"></div>
+        
+        <h2>Available Voices by Language</h2>
+        <div id="voiceList"></div>
+        
+        <h2>Voice Tests</h2>
+        <button onclick="testTamilVoice()">🇮🇳 Test Tamil Voice</button>
+        <button onclick="testHindiVoice()">🇮🇳 Test Hindi Voice</button>
+        <button onclick="testTeluguVoice()">🇮🇳 Test Telugu Voice</button>
+        <button onclick="testEnglishVoice()">🇺🇸 Test English Voice</button>
+        <button onclick="refreshVoices()">🔄 Refresh Voice List</button>
+        
+        <h2>Installation Instructions</h2>
+        <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-top: 20px;">
+            <h3>To install Tamil voices on Windows:</h3>
+            <ol>
+                <li>Go to <strong>Settings</strong> → <strong>Time & Language</strong> → <strong>Speech</strong></li>
+                <li>Click <strong>"Add voices"</strong></li>
+                <li>Download <strong>Tamil (India)</strong>, <strong>Hindi (India)</strong>, and <strong>Telugu (India)</strong></li>
+                <li>Restart your browser</li>
+                <li>Click "Refresh Voice List" button above</li>
+            </ol>
+            
+            <h3>Alternative method:</h3>
+            <ol>
+                <li>Go to <strong>Settings</strong> → <strong>Apps</strong> → <strong>Optional features</strong></li>
+                <li>Click <strong>"Add an optional feature"</strong></li>
+                <li>Search for and install <strong>"Tamil Text-to-Speech"</strong>, <strong>"Hindi Text-to-Speech"</strong>, <strong>"Telugu Text-to-Speech"</strong></li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        let availableVoices = [];
+
+        function loadVoices() {
+            availableVoices = speechSynthesis.getVoices();
+            console.log('📢 Total voices loaded:', availableVoices.length);
+            displayVoices();
+            updateStatus();
+        }
+
+        function displayVoices() {
+            const voiceList = document.getElementById('voiceList');
+            voiceList.innerHTML = '';
+
+            const languages = {
+                tamil: availableVoices.filter(voice => voice.lang.includes('ta') || voice.name.toLowerCase().includes('tamil')),
+                hindi: availableVoices.filter(voice => voice.lang.includes('hi') || voice.name.toLowerCase().includes('hindi')),
+                telugu: availableVoices.filter(voice => voice.lang.includes('te') || voice.name.toLowerCase().includes('telugu')),
+                english: availableVoices.filter(voice => voice.lang.startsWith('en'))
+            };
+
+            Object.entries(languages).forEach(([lang, voices]) => {
+                const section = document.createElement('div');
+                section.innerHTML = `<h3>${lang.charAt(0).toUpperCase() + lang.slice(1)} Voices (${voices.length})</h3>`;
+                
+                if (voices.length === 0) {
+                    section.innerHTML += `<div class="voice-item error">❌ No ${lang} voices found</div>`;
+                } else {
+                    voices.forEach(voice => {
+                        const voiceDiv = document.createElement('div');
+                        voiceDiv.className = `voice-item ${lang}-voice`;
+                        voiceDiv.innerHTML = `
+                            <strong>${voice.name}</strong> (${voice.lang}) 
+                            ${voice.localService ? '[Local]' : '[Remote]'}
+                            ${voice.default ? '[Default]' : ''}
+                            <button onclick="testSpecificVoice('${voice.name}', '${voice.lang}', '${lang}')">Test This Voice</button>
+                        `;
+                        section.appendChild(voiceDiv);
+                    });
+                }
+                
+                voiceList.appendChild(section);
+            });
+        }
+
+        function updateStatus() {
+            const statusDiv = document.getElementById('status');
+            const tamilVoices = availableVoices.filter(voice => voice.lang.includes('ta') || voice.name.toLowerCase().includes('tamil'));
+            const hindiVoices = availableVoices.filter(voice => voice.lang.includes('hi') || voice.name.toLowerCase().includes('hindi'));
+            const teluguVoices = availableVoices.filter(voice => voice.lang.includes('te') || voice.name.toLowerCase().includes('telugu'));
+
+            let statusClass = 'success';
+            let statusMessage = '✅ All Indian language voices are available!';
+
+            if (tamilVoices.length === 0 || hindiVoices.length === 0 || teluguVoices.length === 0) {
+                statusClass = 'warning';
+                const missing = [];
+                if (tamilVoices.length === 0) missing.push('Tamil');
+                if (hindiVoices.length === 0) missing.push('Hindi');
+                if (teluguVoices.length === 0) missing.push('Telugu');
+                statusMessage = `⚠️ Missing ${missing.join(', ')} voices. Please install them using the instructions below.`;
+            }
+
+            statusDiv.className = `status ${statusClass}`;
+            statusDiv.textContent = statusMessage;
+        }
+
+        function testTamilVoice() {
+            const tamilText = 'வணக்கம்! இது தமிழ் குரல் சோதனை. மருத்துவ உதவியாளர் சரியாக வேலை செய்கிறது.';
+            speakText(tamilText, 'ta-IN');
+        }
+
+        function testHindiVoice() {
+            const hindiText = 'नमस्ते! यह हिंदी आवाज़ का परीक्षण है। चिकित्सा सहायक ठीक से काम कर रहा है।';
+            speakText(hindiText, 'hi-IN');
+        }
+
+        function testTeluguVoice() {
+            const teluguText = 'నమస్కారం! ఇది తెలుగు వాయిస్ టెస్ట్. వైద్య సహాయకుడు సరిగ్గా పని చేస్తున్నాడు.';
+            speakText(teluguText, 'te-IN');
+        }
+
+        function testEnglishVoice() {
+            const englishText = 'Hello! This is an English voice test. The medical assistant is working properly.';
+            speakText(englishText, 'en-US');
+        }
+
+        function testSpecificVoice(voiceName, voiceLang, language) {
+            const testTexts = {
+                tamil: 'வணக்கம்! இது தமிழ் குரல் சோதனை.',
+                hindi: 'नमस्ते! यह हिंदी आवाज़ का परीक्षण है।',
+                telugu: 'నమస్కారం! ఇది తెలుగు వాయిస్ టెస్ట్.',
+                english: 'Hello! This is an English voice test.'
+            };
+
+            const text = testTexts[language] || testTexts.english;
+            const voice = availableVoices.find(v => v.name === voiceName);
+            
+            if (voice) {
+                speakTextWithVoice(text, voice);
+            } else {
+                alert('Voice not found!');
+            }
+        }
+
+        function speakText(text, lang) {
+            speechSynthesis.cancel();
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = lang;
+            utterance.rate = 0.9;
+            utterance.pitch = 1;
+            
+            console.log(`🗣️ Speaking: "${text}" in ${lang}`);
+            
+            utterance.onstart = () => console.log('🎵 Speech started');
+            utterance.onend = () => console.log('🔇 Speech ended');
+            utterance.onerror = (e) => console.error('❌ Speech error:', e);
+            
+            speechSynthesis.speak(utterance);
+        }
+
+        function speakTextWithVoice(text, voice) {
+            speechSynthesis.cancel();
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.voice = voice;
+            utterance.rate = 0.9;
+            utterance.pitch = 1;
+            
+            console.log(`🗣️ Speaking with ${voice.name}: "${text}"`);
+            
+            utterance.onstart = () => console.log(`🎵 Speech started with ${voice.name}`);
+            utterance.onend = () => console.log('🔇 Speech ended');
+            utterance.onerror = (e) => console.error('❌ Speech error:', e);
+            
+            speechSynthesis.speak(utterance);
+        }
+
+        function refreshVoices() {
+            console.log('🔄 Refreshing voices...');
+            loadVoices();
+            alert('Voice list refreshed! Check the console for details.');
+        }
+
+        // Initialize
+        if (speechSynthesis.getVoices().length === 0) {
+            speechSynthesis.addEventListener('voiceschanged', loadVoices);
+        } else {
+            loadVoices();
+        }
+
+        // Also try loading after a short delay
+        setTimeout(loadVoices, 1000);
+    </script>
+</body>
+</html>

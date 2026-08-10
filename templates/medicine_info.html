@@ -1,0 +1,540 @@
+{% extends "base.html" %}
+
+{% block title %}Medicine Info - MedIntel{% endblock %}
+
+{% block head %}
+<style>
+  .main-content {
+    background-color: #e6f0fa;
+    min-height: calc(100vh - 140px); /* Adjust for navbar and footer */
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 100px;
+  }
+
+  .container {
+    text-align: center;
+    background: transparent;
+    box-shadow: none;
+    width: 500px;
+    max-width: 90%;
+    margin: 0 auto;
+  }
+
+  .search-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .input-group {
+    display: flex;
+    width: 100%;
+    gap: 8px;
+    align-items: center;
+  }
+
+  input[type="text"] {
+    flex: 1;
+    padding: 14px;
+    border: 2px solid #cbd5e1;
+    border-radius: 10px;
+    font-size: 16px;
+    text-align: center;
+    outline: none;
+    transition: border-color 0.3s;
+  }
+
+  input[type="text"]:focus {
+    border-color: #2563eb;
+  }
+
+  .voice-btn {
+    padding: 14px;
+    background: #059669;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.3s;
+    min-width: 50px;
+  }
+
+  .voice-btn:hover {
+    background: #047857;
+  }
+
+  .voice-btn.recording {
+    background: #dc2626;
+    animation: pulse 1.5s infinite;
+  }
+
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+  }
+
+  .search-btn {
+    width: 100%;
+    padding: 14px;
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+
+  .search-btn:hover {
+    background: #1e40af;
+  }
+
+  .search-btn:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+  }
+
+  .voice-status {
+    background: #fef3c7;
+    color: #92400e;
+    padding: 8px 16px;
+    border-radius: 8px;
+    margin-top: 10px;
+    display: none;
+    font-size: 14px;
+  }
+
+  .result-box {
+    margin-top: 30px;
+    background: #f9fbff;
+    padding: 25px;
+    border-radius: 12px;
+    border: 1px solid #cbd5e1;
+    text-align: left;
+    display: none;
+    position: relative;
+    margin-bottom: 30px; /* Add space before footer */
+  }
+
+  .result-box h2 {
+    font-size: 24px;
+    color: #003366;
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .speak-result-btn {
+    background: #7c3aed;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.3s;
+  }
+
+  .speak-result-btn:hover {
+    background: #6d28d9;
+  }
+
+  .speak-result-btn.speaking {
+    background: #dc2626;
+  }
+
+  .result-box p {
+    font-size: 17px;
+    line-height: 1.8;
+    color: #374151;
+    margin-bottom: 12px;
+    padding: 10px;
+    background: #ffffff;
+    border-radius: 8px;
+    border-left: 4px solid #2563eb;
+  }
+
+  strong {
+    color: #003366;
+    display: block;
+    margin-bottom: 5px;
+  }
+
+  .loading {
+    text-align: center;
+    padding: 20px;
+    color: #6b7280;
+  }
+
+  .disclaimer {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 20px;
+    color: #991b1b;
+    font-size: 14px;
+  }
+
+  .auto-speak-toggle {
+    background: #f3f4f6;
+    color: #374151;
+    border: 1px solid #d1d5db;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-left: 10px;
+  }
+
+  .auto-speak-toggle.enabled {
+    background: #10b981;
+    color: white;
+    border-color: #10b981;
+  }
+
+  /* Override footer for medicine page */
+  .footer {
+    background-color: #f8f9fa !important;
+    text-align: center !important;
+    margin-top: 50px !important;
+  }
+</style>
+{% endblock %}
+
+{% block fullscreen_content %}
+<div class="main-content">
+  <div class="container">
+    <h1 class="mb-4" style="color: #003366;">
+      <i class="fas fa-pills"></i> Medicine Information
+    </h1>
+    
+    <!-- Search Section -->
+    <div class="search-box">
+      <div class="input-group">
+        <input type="text" id="medicineInput" placeholder="Enter medicine name (e.g., Aspirin, Tylenol)">
+        <button id="voiceBtn" class="voice-btn" title="Voice Input">
+          <i class="fas fa-microphone"></i>
+        </button>
+      </div>
+      <button onclick="searchMedicine()" class="search-btn" id="searchBtn">
+        <i class="fas fa-search"></i> Search Medicine
+      </button>
+      
+      <div id="voiceStatus" class="voice-status">
+        <i class="fas fa-microphone"></i> Listening... Speak the medicine name
+      </div>
+    </div>
+
+    <!-- Results Section -->
+    <div class="result-box" id="resultBox">
+      <div id="loadingDiv" class="loading" style="display: none;">
+        <i class="fas fa-spinner fa-spin"></i> Searching medicine information...
+      </div>
+      
+      <div id="resultContent">
+        <h2 id="medName">
+          <span></span>
+          <div>
+            <button id="speakResultBtn" class="speak-result-btn" title="Speak Medicine Information">
+              <i class="fas fa-volume-up"></i> Speak
+            </button>
+            <button id="autoSpeakToggle" class="auto-speak-toggle" title="Toggle Auto-Speak">
+              <i class="fas fa-volume-up"></i>
+            </button>
+          </div>
+        </h2>
+        
+        <p><strong>🎯 Purpose:</strong> <span id="purpose">N/A</span></p>
+        <p><strong>💊 Dosage & Administration:</strong> <span id="dosage">N/A</span></p>
+        <p><strong>📖 Indications & Usage:</strong> <span id="usage">N/A</span></p>
+        <p><strong>⚠️ Warnings & Precautions:</strong> <span id="warnings">N/A</span></p>
+        
+        <div class="disclaimer">
+          <i class="fas fa-exclamation-triangle"></i>
+          <strong>Important Medical Disclaimer:</strong> This information is for educational purposes only and should not be considered medical advice. Always consult your healthcare provider before starting, stopping, or changing any medication. Your doctor is best placed to interpret medication information and provide personalized recommendations based on your specific medical condition.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block footer %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/voice-assistant.js') }}"></script>
+<script>
+let currentMedicineInfo = '';
+let autoSpeakEnabled = localStorage.getItem('medicineAutoSpeak') === 'true';
+
+// Voice recognition setup
+let recognition;
+if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = 'en-US';
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => {
+        document.getElementById('voiceBtn').classList.add('recording');
+        document.getElementById('voiceStatus').style.display = 'block';
+        console.log('🎤 Voice recognition started for medicine search');
+    };
+
+    recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        document.getElementById('medicineInput').value = transcript;
+        console.log('🎯 Medicine name recognized:', transcript);
+        
+        // Auto-search after voice input
+        setTimeout(() => {
+            searchMedicine();
+        }, 500);
+    };
+
+    recognition.onend = () => {
+        document.getElementById('voiceBtn').classList.remove('recording');
+        document.getElementById('voiceStatus').style.display = 'none';
+    };
+
+    recognition.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+        document.getElementById('voiceBtn').classList.remove('recording');
+        document.getElementById('voiceStatus').style.display = 'none';
+        
+        let errorMessage = 'Voice recognition error';
+        switch(event.error) {
+            case 'not-allowed':
+                errorMessage = 'Microphone access denied. Please allow microphone permissions.';
+                break;
+            case 'no-speech':
+                errorMessage = 'No speech detected. Please try again.';
+                break;
+            case 'network':
+                errorMessage = 'Network error. Please check your connection.';
+                break;
+        }
+        
+        if (event.error !== 'aborted') {
+            alert(errorMessage);
+        }
+    };
+}
+
+// Initialize auto-speak toggle
+function initializeAutoSpeakToggle() {
+    const toggle = document.getElementById('autoSpeakToggle');
+    if (autoSpeakEnabled) {
+        toggle.classList.add('enabled');
+        toggle.innerHTML = '<i class="fas fa-volume-up"></i>';
+        toggle.title = 'Auto-speak enabled - Click to disable';
+    } else {
+        toggle.classList.remove('enabled');
+        toggle.innerHTML = '<i class="fas fa-volume-mute"></i>';
+        toggle.title = 'Auto-speak disabled - Click to enable';
+    }
+}
+
+// Event Listeners
+document.getElementById('voiceBtn').addEventListener('click', () => {
+    if (recognition) {
+        try {
+            recognition.start();
+        } catch (error) {
+            console.error('Error starting recognition:', error);
+            alert('Could not start voice recognition. Please try again.');
+        }
+    } else {
+        alert('Voice recognition is not supported in this browser. Please try Chrome or Edge.');
+    }
+});
+
+document.getElementById("medicineInput").addEventListener("keypress", function(event) {
+    if (event.key === "Enter") {
+        event.preventDefault();
+        searchMedicine();
+    }
+});
+
+document.getElementById('speakResultBtn').addEventListener('click', () => {
+    speakMedicineInfo();
+});
+
+document.getElementById('autoSpeakToggle').addEventListener('click', () => {
+    autoSpeakEnabled = !autoSpeakEnabled;
+    localStorage.setItem('medicineAutoSpeak', autoSpeakEnabled);
+    initializeAutoSpeakToggle();
+    
+    const statusMessage = autoSpeakEnabled ? 
+        '🔊 Auto-speak enabled for medicine information!' : 
+        '🔇 Auto-speak disabled.';
+    console.log(statusMessage);
+});
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', () => {
+    initializeAutoSpeakToggle();
+});
+
+function speakMedicineInfo() {
+    if (!currentMedicineInfo) {
+        alert('No medicine information to speak.');
+        return;
+    }
+
+    const speakBtn = document.getElementById('speakResultBtn');
+    
+    if (speechSynthesis.speaking) {
+        speechSynthesis.cancel();
+        speakBtn.classList.remove('speaking');
+        speakBtn.innerHTML = '<i class="fas fa-volume-up"></i> Speak';
+        return;
+    }
+
+    // Clean and prepare text for better speech
+    const cleanText = currentMedicineInfo
+        .replace(/\n/g, '. ')
+        .replace(/\s+/g, ' ')
+        .replace(/[^\w\s.,!?;:-]/g, '')
+        .trim();
+
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    
+    // Enhanced voice settings
+    utterance.rate = 0.8;
+    utterance.pitch = 1.0;
+    utterance.volume = 0.9;
+
+    // Select best available voice
+    const voices = speechSynthesis.getVoices();
+    const preferredVoice = voices.find(voice => 
+        (voice.name.includes('Google') || voice.name.includes('Microsoft')) && 
+        voice.lang.startsWith('en')
+    ) || voices.find(voice => voice.lang.startsWith('en-US')) || voices[0];
+    
+    if (preferredVoice) {
+        utterance.voice = preferredVoice;
+    }
+
+    utterance.onstart = () => {
+        speakBtn.classList.add('speaking');
+        speakBtn.innerHTML = '<i class="fas fa-stop-circle"></i> Stop';
+        console.log('🔊 Speaking medicine information...');
+    };
+
+    utterance.onend = () => {
+        speakBtn.classList.remove('speaking');
+        speakBtn.innerHTML = '<i class="fas fa-volume-up"></i> Speak';
+        console.log('🔇 Finished speaking medicine information');
+    };
+
+    utterance.onerror = (event) => {
+        console.error('Speech synthesis error:', event);
+        speakBtn.classList.remove('speaking');
+        speakBtn.innerHTML = '<i class="fas fa-volume-up"></i> Speak';
+    };
+
+    speechSynthesis.speak(utterance);
+}
+
+async function searchMedicine() {
+    const medicineName = document.getElementById("medicineInput").value.trim();
+    if (!medicineName) {
+        alert("Please enter a medicine name!");
+        return;
+    }
+
+    // Show loading state
+    const searchBtn = document.getElementById('searchBtn');
+    const resultBox = document.getElementById('resultBox');
+    const loadingDiv = document.getElementById('loadingDiv');
+    const resultContent = document.getElementById('resultContent');
+    
+    searchBtn.disabled = true;
+    searchBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Searching...';
+    resultBox.style.display = 'block';
+    loadingDiv.style.display = 'block';
+    resultContent.style.display = 'none';
+
+    try {
+        // First try brand name search
+        let response = await fetch(`https://api.fda.gov/drug/label.json?search=openfda.brand_name:"${encodeURIComponent(medicineName)}"&limit=1`);
+        let data = await response.json();
+
+        if (!data.results || data.results.length === 0) {
+            // Try generic name search
+            response = await fetch(`https://api.fda.gov/drug/label.json?search=openfda.generic_name:"${encodeURIComponent(medicineName)}"&limit=1`);
+            data = await response.json();
+        }
+
+        if (!data.results || data.results.length === 0) {
+            // Try substance name search
+            response = await fetch(`https://api.fda.gov/drug/label.json?search=openfda.substance_name:"${encodeURIComponent(medicineName)}"&limit=1`);
+            data = await response.json();
+        }
+
+        if (data.results && data.results.length > 0) {
+            const result = data.results[0];
+            
+            // Update display content
+            document.getElementById("medName").querySelector('span').innerText = medicineName.toUpperCase();
+            document.getElementById("purpose").innerText = result.purpose ? result.purpose[0] : "Information not available in FDA database";
+            document.getElementById("dosage").innerText = result.dosage_and_administration ? result.dosage_and_administration[0] : "Please consult your healthcare provider for proper dosage information";
+            document.getElementById("usage").innerText = result.indications_and_usage ? result.indications_and_usage[0] : "Information not available in FDA database";
+            document.getElementById("warnings").innerText = result.warnings ? result.warnings[0] : "No specific warnings listed in FDA database. Always consult your healthcare provider";
+
+            // Prepare comprehensive text for voice
+            currentMedicineInfo = `Medicine information for ${medicineName}. 
+                Purpose: ${result.purpose ? result.purpose[0] : "Information not available"}. 
+                Dosage and Administration: ${result.dosage_and_administration ? result.dosage_and_administration[0] : "Please consult your healthcare provider"}. 
+                Indications and Usage: ${result.indications_and_usage ? result.indications_and_usage[0] : "Information not available"}. 
+                Warnings and Precautions: ${result.warnings ? result.warnings[0] : "No specific warnings listed. Always consult your healthcare provider"}. 
+                Remember, this information is for educational purposes only. Always consult your healthcare provider before making any medication decisions.`;
+
+            // Show results
+            loadingDiv.style.display = 'none';
+            resultContent.style.display = 'block';
+            
+            // Auto-speak if enabled
+            if (autoSpeakEnabled) {
+                setTimeout(() => {
+                    speakMedicineInfo();
+                }, 1000);
+            }
+            
+            console.log('✅ Medicine information found and displayed for:', medicineName);
+            
+        } else {
+            // No results found
+            resultBox.style.display = 'none';
+            alert(`No results found for "${medicineName}". Please check the spelling or try:\n• The generic name (e.g., "acetaminophen" instead of "Tylenol")\n• The brand name (e.g., "Tylenol" instead of "acetaminophen")\n• Alternative spellings`);
+            console.log('❌ No results found for:', medicineName);
+        }
+    } catch (error) {
+        console.error("Error fetching medicine data:", error);
+        resultBox.style.display = 'none';
+        alert("Failed to fetch medicine information. Please check your internet connection and try again.");
+    } finally {
+        // Reset search button
+        searchBtn.disabled = false;
+        searchBtn.innerHTML = '<i class="fas fa-search"></i> Search Medicine';
+    }
+}
+
+// Initialize voices for speech synthesis
+speechSynthesis.addEventListener('voiceschanged', () => {
+    console.log('🎤 Speech synthesis voices loaded:', speechSynthesis.getVoices().length);
+});
+</script>
+{% endblock %}
